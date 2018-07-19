@@ -3,6 +3,8 @@
 
 Dimension reduction is a common and critical first step to analysis of high throughput singe cell RNA sequencing. tGPLVM is the a nonparametric, generative model for nonlinear manifold learning; that is a flexible, nearly assumption-free model that doesn't require setting parameters *a priori* (e.g. number of dimensions, perplexity, etc.) and provides uncertainty estimates for sample mappings. tGPLVM can be used for visualization of high-dimensional data or as part of a pipeline for cell type identification or pseudotime reconstruction. 
 
+We provide a script for fitting the model with Black Box Variational Inference for speed and scabality. A batch learning implementation is also provided for larger datasets that need to be fit under memoery restriction.
+
 ## Usage
 Requirements:
 1. numpy
