@@ -6,6 +6,9 @@ Dimension reduction is a common and critical first step in analysis of high thro
 We provide a script for fitting the model with Black Box Variational Inference for speed and scabality. A batch learning implementation is also provided for larger datasets that need to be fit under memory restriction.
 
 ## Usage
+
+### Requirements
+
 tGPLVM is implemented in python 2.7 with the following packages:
 1. numpy
 2. pandas
@@ -14,9 +17,10 @@ tGPLVM is implemented in python 2.7 with the following packages:
 5. edwards
 6. sklearn
 
-Input: A csv or hdf5 of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns
+### Running
+**Input**: A numpy array of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns (loaded to y_train)
 
-Options (corresponding script variable):
+**Options** (corresponding script variable):
 1. Degrees of freedom (df) - default: 4
 2. Initial Number of Dimensions (Q) - default: 3
 3. Kernel Function
@@ -27,9 +31,11 @@ Options (corresponding script variable):
 6. Max iterations (iterations) - default: 5000
 7. Save frequency (save_freq): - default: 250
 
-Output: hdf5 file with
+**Output**: hdf5 file with
 1. Latent mapping posterior (mean and variance)
 2. Gene-specific noise
 3. Kernel hyperparameters (variance, lengthscale)
 4. Inducing points in latent and high-dimensional space
 5. Latent high-dimensional data (denoised data)
+
+
