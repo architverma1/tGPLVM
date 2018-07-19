@@ -6,12 +6,13 @@ Dimension reduction is a common and critical first step in analysis of high thro
 We provide a script for fitting the model with Black Box Variational Inference for speed and scabality. A batch learning implementation is also provided for larger datasets that need to be fit under memory restriction.
 
 ## Usage
-Requirements:
+tGPLVM is implemented in python 2.7 with the following packages:
 1. numpy
 2. pandas
 3. h5py
 4. tensorflow
 5. edwards
+6. sklearn
 
 Input: A csv or hdf5 of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns
 
