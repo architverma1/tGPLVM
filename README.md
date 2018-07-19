@@ -18,13 +18,14 @@ Input: A csv or hdf5 of scRNA counts (or other types data) with format *N* cells
 
 Options (corresponding script variable):
 1. Degrees of freedom (df) - default: 4
-2. Kernel Function
+2. Initial Number of Dimensions (Q) - default: 3
+3. Kernel Function
     + Matern 1/2, 3/2, 5/2 (m12, m32, m52) - default: True
     + Periodic (per_bool) - default: False
-3. Number of Inducing Points (m) - default: 30
-4. Batch size (M) - default: 100 *in tGPLVM-iterations-minibatch.py*
-5. Max iterations (iterations) - default: 5000
-6. Save frequency (save_freq): - default: 250
+4. Number of Inducing Points (m) - default: 30
+5. Batch size (M) - default: 100 *in tGPLVM-iterations-minibatch.py*
+6. Max iterations (iterations) - default: 5000
+7. Save frequency (save_freq): - default: 250
 
 Output: hdf5 file with
 1. Latent mapping posterior (mean and variance)
