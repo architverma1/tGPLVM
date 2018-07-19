@@ -23,8 +23,12 @@ Options (corresponding script variable):
     + Periodic (per_bool) - default: False
 3. Number of Inducing Points (m) - default: 30
 4. Batch size (M) - default: 100 *in tGPLVM-iterations-minibatch.py*
+5. Max iterations (iterations) - default: 5000
+6. Save frequency (save_freq): - default: 250
 
 Output: hdf5 file with
 1. Latent mapping posterior (mean and variance)
 2. Gene-specific noise
-3. Kernel hyperparameters
+3. Kernel hyperparameters (variance, lengthscale)
+4. Inducing points in latent and high-dimensional space
+5. Latent high-dimensional data (denoised data)
