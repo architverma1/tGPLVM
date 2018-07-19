@@ -18,18 +18,20 @@ tGPLVM is implemented in python 2.7 with the following packages:
 6. sklearn
 
 ### Running
-**Input**: A numpy array of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns (loaded to ```python y_train```)
+**Input**: A numpy array of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns (loaded to ```y_train```)
 
 **Options** (corresponding script variable):
-1. Degrees of freedom (```python df```) - default: 4
-2. Initial Number of Dimensions (```python  Q```) - default: 3
+The following parameters can be adjusted in the script to adjust inference:
+
+1. Degrees of freedom (```df```) - default: 4
+2. Initial Number of Dimensions (```Q```) - default: 3
 3. Kernel Function
-    + Matern 1/2, 3/2, 5/2 (```python m12, m32, m52```) - default: True
-    + Periodic (```python  per_bool```) - default: False
-4. Number of Inducing Points (```python m```) - default: 30
-5. Batch size (```python M```) - default: 100 *in tGPLVM-iterations-minibatch.py*
-6. Max iterations (```python iterations```) - default: 5000
-7. Save frequency (```python save_freq```): - default: 250
+    + Matern 1/2, 3/2, 5/2 (```m12, m32, m52```) - default: True
+    + Periodic (```per_bool```) - default: False
+4. Number of Inducing Points (```m```) - default: 30
+5. Batch size (```M```) - default: 100 *in tGPLVM-iterations-minibatch.py*
+6. Max iterations (```iterations```) - default: 5000
+7. Save frequency (```save_freq```): - default: 250
 
 **Output**: hdf5 file with
 1. Latent mapping posterior (mean and variance)
