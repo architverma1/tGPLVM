@@ -1,7 +1,17 @@
-# tGPLVM
-## A Nonparametric, Generative Model for Manifold Learning with scRNA-seq experimental data
+# tGPLVM: A Nonparametric, Generative Model for Manifold Learning with scRNA-seq experimental data
+## Intro
 
-Input: A csv or hdf5 of scRNA count (or other data) with format *N* cells (samples) by *p* genes (features)
+Dimension reduction is a common and critical first step to analysis of high throughput singe cell RNA sequencing. tGPLVM is the a nonparametric, generative model for nonlinear manifold learning; that is a flexible, nearly assumption-free model that doesn't require setting parameters *a priori* (e.g. number of dimensions, perplexity, etc.) and provides uncertainty estimates for sample mappings. tGPLVM can be used for visualization of high-dimensional data or as part of a pipeline for cell type identification or pseudotime reconstruction. 
+
+## Usage
+Requirements:
+1. numpy
+2. pandas
+3. h5py
+4. tensorflow
+5. edwards
+
+Input: A csv or hdf5 of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns
 
 Options (corresponding script variable):
 1. Degrees of freedom (df) - default: 4
