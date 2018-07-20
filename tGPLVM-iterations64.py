@@ -335,22 +335,29 @@ info_dict = inference.update()
 inference.print_progress(info_dict)
 loss_old = info_dict['loss'];
 
+convergence_counter = 0
+
 for iteration in range(1,iterations):
     info_dict = inference.update()
     inference.print_progress(info_dict)
     loss_new = info_dict['loss']
-    
+
     if iteration % save_freq == 0:
         temp_name = 'model-output-' + str(iteration) + '.hdf5'
         save(temp_name)
-        
+
     if loss_new > loss_old:
         print(iteration)
-        print('Converge')
-        break
+        convergence_counter += 1
+        print(convergence_counter)
+
     else:
-        loss_new = loss_old
-        
+        convergence_counter = 0
+        loss_old = loss_new
+
+
+    if convergence_counter > 10:
+        break
 inference.finalize()
 
 ## Save Results
