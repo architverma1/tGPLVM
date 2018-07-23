@@ -29,7 +29,7 @@ The following parameters can be adjusted in the script to adjust inference:
     + Matern 1/2, 3/2, 5/2 (```m12, m32, m52```) - default: True
     + Periodic (```per_bool```) - default: False
 4. Number of Inducing Points (```m```) - default: 30
-5. Batch size (```M```) - default: 100 *in tGPLVM-iterations-minibatch.py*
+5. Batch size (```M```) - default: 100 (*in tGPLVM-iterations-minibatch.py*)
 6. Max iterations (```iterations```) - default: 5000
 7. Save frequency (```save_freq```): - default: 250
 
