@@ -6,17 +6,19 @@ import pandas as pd
 from edward.models import MultivariateNormalTriL, Normal, StudentT
 from tensorflow.contrib.distributions import softplus_inverse
 
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, NMF
 from sklearn.manifold import TSNE
 from sklearn.decomposition import TruncatedSVD
 
 from scipy.sparse import csc_matrix
+from scipy.io import mmread
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 import shutil, os, subprocess
 import h5py
+import time
 
 import argparse
 # settings
@@ -32,13 +34,15 @@ parser.add_argument('--m32', dest = 'm32', type = bool, default = False, help = 
 parser.add_argument('--m52', dest = 'm52', type = bool, default = False, help = 'Include Matern 5/2 kernel')
 parser.add_argument('--T', dest = 'Terror', type = bool, default = True, help = 'Use Student t Error')
 
+#parser.add_argument('--in_path', dest = 'in_path', type = str, help = 'mtx file')
+
 args = parser.parse_args()
 
-
+ns = 1000000
 SIMULATED = False
 PCA_INIT = True
 CELLS_BY_GENES = True
-SPARSE = False
+SPARSE = True
 
 m12 = args.m12
 m32 = args.m32
@@ -50,12 +54,13 @@ Terror = args.Terror
 Q = args.Q
 m = 30
 df = 4.0
-offset = 0.05
-M = 3005
-p = 500
+offset = 0.01
+M = np.minimum(ns,2500)
+p = 250
 
 
-iterations = 500
+iterations = 100 * int(ns/M)
+print(iterations)
 save_freq = 500
 #out_dir = './cord-blood/t-error/q5/'
 #out_dir = './test_kern_fx/' # save to scratch
@@ -82,29 +87,39 @@ os.makedirs(out_dir)
 #y_train = dat_waterfall.values.T #[np.sum(dat_waterfall.values,axis = 1) > 10].T
 #y_train = np.log2(1+y_train)
 
-dat_path = '/home/archithpc/sc-dim-red/Test_5_Zeisel.h5'
-dat_file = h5py.File(dat_path,'r')
-y_train = dat_file['in_X'][:]
+#dat_path = '/home/archithpc/sc-dim-red/Test_3_Pollen.h5'
+#dat_file = h5py.File(dat_path,'r')
+#y_train = dat_file['in_X'][:]
 
-#dat_path = '1M_neurons_filtered_gene_bc_matrices_h5.h5'
+dat_path = '1M_neurons_filtered_gene_bc_matrices_h5.h5'
+dat_file = h5py.File(dat_path, 'r')
+y_train = csc_matrix((dat_file['mm10']['data'],dat_file['mm10']['indices'],dat_file['mm10']['indptr']))
+y_train = y_train.T[:ns,:]
+
+#dat_path = '/home/archithpc/data/ica_bone_marrow_h5.h5'
 #dat_file = h5py.File(dat_path, 'r')
-#y_train = csc_matrix((dat_file['mm10']['data'],dat_file['mm10']['indices'],dat_file['mm10']['indptr']))
+#y_train = csc_matrix((dat_file['GRCh38']['data'],dat_file['GRCh38']['indices'],dat_file['GRCh38']['indptr']))
 #y_train = y_train.T
 
-#dat_path = '/home/archithpc/data/ica_cord_blood_h5.h5'
+#dat_path = '/home/archithpc/data/t_3k_4k_aggregate_filtered_gene_bc_matrices_h5.h5'
 #dat_file = h5py.File(dat_path, 'r')
 #y_train = csc_matrix((dat_file['GRCh38']['data'],dat_file['GRCh38']['indices'],dat_file['GRCh38']['indptr']))
 #y_train = y_train.T
 
 #d2 = pd.read_csv('/home/archithpc/data/tapio_tcell_tpm.txt', delimiter = '\t')
-
-
 #y_train = d2.values[(np.sum(d2.values[:,1:],axis = 1) > 0),1:].astype(np.float32)
-#y_train = np.log2(1+y_train)
+#y_train = np.log2(1+y_train.T)
 
 #dat_path = '/home/archithpc/data/chorion.txt'
 #dat = pd.read_csv(dat_path, delimiter = '\t')
 #y_train = dat.values[:,1:].T.astype(np.float32)
+#y_train = np.log2(1.+y_train)
+
+#dat_path = '/home/archithpc/data/mouse-2k-nuerons/mm10/matrix.mtx'
+#dat_path = '/home/archithpc/data/donor-a-68k-pbmcs/filtered_matrices_mex/hg19/matrix.mtx'
+#dat_path = args.in_path
+#filtered = mmread(dat_path)
+#y_train = csc_matrix(filtered).T
 
 
 if CELLS_BY_GENES:
@@ -119,7 +134,8 @@ else:
 if SPARSE:
 	exp = y_train > 0
 	exp_weight = exp.sum(axis = 0)
-	gene_weights =200.* np.squeeze(np.array(exp_weight), axis = 0)/float(N)
+	print(exp_weight.shape)
+	gene_weights = 200.* np.squeeze(np.array(exp_weight), axis = 0)/float(N)
 else:
 	gene_weights = 200.*np.sum(y_train > 0, axis = 0)/float(N)
 p_g = np.exp(gene_weights)/np.sum(np.exp(gene_weights))
@@ -144,10 +160,11 @@ def next_batch(x_train, M, p):
     idx_batch = np.random.choice(N, M, replace = False)
     xslice1 = x_train[idx_batch]
     gene_ix = np.random.choice(G, size = p,replace = False, p = p_g)
+    #gene_ix = np.array(range(0,p))
     xslice2 = xslice1[:,gene_ix].astype(np.float64)
     if SPARSE:
             xslice2 = xslice2.toarray()
-    #xslice2 = np.log2(1. + xslice2)
+	    xslice2 = np.log2(1. + xslice2)
     return xslice2, idx_batch.astype(np.int32), gene_ix.astype(np.int32)
 
 ### Inference
@@ -220,11 +237,12 @@ def kernelfx(X1,X2): # takes float32, casts to float64, computes float64 kernel
 
 if PCA_INIT:
 	if SPARSE:
-		pca = TruncatedSVD(n_components = Q)
+		pca = NMF(n_components = Q)
+		#pca = PCA(n_components = Q)
 	else:
 		pca = PCA(n_components = Q)
 	qx_init = pca.fit_transform(y_train) #.tocsr())
-	qx_init = 25.*qx_init/np.max(qx_init) 
+	qx_init = 15.*qx_init/np.max(qx_init) 
 	#print(np.max(qx_init))
 else:
 	qx_init = np.random.normal(0,1,size = [N,Q])
@@ -251,13 +269,13 @@ varianceM12_pre = tf.Variable(np.log(np.exp(0.5)-1), dtype = tf.float32)
 lengthscaleM12 = tf.nn.softplus(lengthscaleM12_pre)
 varianceM12 = tf.nn.softplus(varianceM12_pre)
 
-lengthscaleM32_pre = tf.Variable(np.log(np.exp(5.*len_init)-1), dtype = tf.float32)
+lengthscaleM32_pre = tf.Variable(np.log(np.exp(7.*len_init)-1), dtype = tf.float32)
 varianceM32_pre = tf.Variable(np.log(np.exp(0.1)-1), dtype = tf.float32)
 
 lengthscaleM32 = tf.nn.softplus(lengthscaleM32_pre)
 varianceM32 = tf.nn.softplus(varianceM32_pre)
 
-lengthscaleM52_pre = tf.Variable(np.log(np.exp(5.*len_init)-1), dtype = tf.float32)
+lengthscaleM52_pre = tf.Variable(np.log(np.exp(7.*len_init)-1), dtype = tf.float32)
 varianceM52_pre = tf.Variable(np.log(np.exp(0.1)-1), dtype = tf.float32)
 
 lengthscaleM52 = tf.nn.softplus(lengthscaleM52_pre)
@@ -363,6 +381,8 @@ qf = MultivariateNormalTriL(loc = tf.cast(QKfuKuuinvU, dtype = tf.float32), scal
 
 ## Save fx
 def save(name):
+    time_now = time.time()
+    elapsed = time_now - time_start
     x_post = qx_mean.eval()
     x_var_post = tf.nn.softplus(qx_scale).eval()
     #f_post = qf.eval(feed_dict = {y_dat: y_train.T, idx_ph: range(0,N)})
@@ -399,6 +419,7 @@ def save(name):
     fout.create_dataset("kernel_names", data = kern_names)
     fout.create_dataset("lengthscales", data = kern_lengths)
     fout.create_dataset("variances", data = kern_vars)
+    fout.create_dataset("elapsed_time", data = elapsed)
 
     if SIMULATED:
         fout.create_dataset("x_true", data = x_true)
@@ -409,7 +430,7 @@ def save(name):
 ## Run Inference
 inference = ed.KLqp({f: qf, x: qx, u: qu}, data = {y: y_dat_ph})
 #inference.run(n_iter = iterations, logdir = 'log/inducing_pts')
-
+time_start = time.time()
 inference.initialize()
 tf.global_variables_initializer().run()
 
@@ -421,6 +442,9 @@ loss_old = info_dict['loss'];
 
 convergence_counter = 0
 test_freq = 15
+min_iter = 100
+
+chol_fails = 0
 
 for iteration in range(1,iterations):
     #if iteration % test_freq == 0:
@@ -430,14 +454,19 @@ for iteration in range(1,iterations):
 #	y_batch, idx_batch = next_batch(y_train, M)
     
     y_batch, idx_batch, gix = next_batch(y_train, M, p)
-    info_dict = inference.update(feed_dict = {y_dat: y_batch, idx_ph: idx_batch, idx_g: gix})
-    inference.print_progress(info_dict)
+    try: 
+    	info_dict = inference.update(feed_dict = {y_dat: y_batch, idx_ph: idx_batch, idx_g: gix})
+	inference.print_progress(info_dict)
+    except:
+    	print('chol_error')
+	offset += .01
+        chol_fails +=1
    
     if iteration % save_freq == 0:
         temp_name = 'model-output-' + str(iteration) + '.hdf5'
         save(temp_name)
 
-   # if iteration % test_freq == 0:
+#    if iteration % test_freq == 0:
 #	    loss_new = info_dict['loss']
 #	    if loss_new > loss_old:
 #		    print(iteration)
@@ -446,12 +475,17 @@ for iteration in range(1,iterations):
 #	    else:
 #		    convergence_counter = 0
 #		    loss_old = loss_new
-
-
-    if convergence_counter > 3:
-        break
+#    if iteration > min_iter:
+#	    loss_new = info_dict['loss']
+#	    if loss_new > loss_old:
+#		    convergence_counter += 1
+#	    else:
+#		    convergence_counter = 0
+#		    loss_old = loss_new
+#	    if convergence_counter > 5:
+#		    break
 inference.finalize()
-
+print(chol_fails)
 ## Save Results
 save('model-output-final.hdf5')
 

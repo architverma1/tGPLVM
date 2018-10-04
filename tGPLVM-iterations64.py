@@ -21,22 +21,25 @@ import h5py
 
 SIMULATED = False
 PCA_INIT = False
-CELLS_BY_GENES = True
+CELLS_BY_GENES = False
 
 m12 = True
-m32 = True
-m52 = True
+m32 = False
+m52 = False
 per_bool = False
 
 
-Q = 3
-m = 30
+Q = 6
+m = 25
 df = 4.0
 offset = 0.01
+#p = 500
 
-iterations = 5000
+
+iterations = 2500
+min_iter = 50
 save_freq = 250
-out_dir = '/tigress/architv/single-cell/tGPLVM/tGPLVM/src/waterfall-tf15-m30-float64-no_gene_filter' # save to tiger
+out_dir = '/home/archithpc/tGPLVM/Q6/gpfates/pca-init2/'
 #out_dir = './test_kern_fx/' # save to scratch
 
 # create out directory
@@ -57,10 +60,15 @@ os.makedirs(out_dir)
 #xp = pd.read_csv('/home/architv/single-cell/tGPLVM/tGPLVM/dat/splatter-groups.csv')
 #y_train = xp.values[:,1:].T.astype(np.float32)
 
-dat_waterfall = pd.read_csv('/tigress/architv/single-cell/data/pseudotime/Waterfall/GSE71485_Single_TPM.txt', delimiter = '\t')
-y_train = dat_waterfall.values.T #[np.sum(dat_waterfall.values,axis = 1) > 10].T
+#dat_waterfall = pd.read_csv('/home/archithpc/data/GSE71485_Single_TPM.txt', delimiter = '\t')
+#y_train = dat_waterfall.values[np.sum(dat_waterfall.values,axis = 1) > 0].T
 
+d2 = pd.read_csv('/home/archithpc/data/tapio_tcell_tpm.txt', delimiter = '\t')
+y_train = d2.values[(np.sum(d2.values[:,1:],axis = 1) > 0),1:].astype(np.float32)
 
+#dat_path = '/home/archithpc/sc-dim-red/Test_1_mECS.h5'
+#dat_file = h5py.File(dat_path,'r')
+#y_train = dat_file['in_X'][:]
 
 if CELLS_BY_GENES:
 	N = y_train.shape[0]
@@ -151,8 +159,11 @@ def kernelfx(X1,X2): # takes float32, casts to float64, computes float64 kernel
 # Initialize latent space X with random noise or PCA
 
 if PCA_INIT:
-	pca = PCA(n_components = Q)
-	qx_init = pca.fit_transform(y_train) 
+	#pca = PCA(n_components = Q)
+	#qx_init = pca.fit_transform(y_train)
+	#qx_init = 2*qx_init/np.max(qx_init) 
+	qx_init = np.load('zifa-gpfates-q6.npy')
+	#print(np.max(qx_init))
 else:
 	qx_init = np.random.normal(0,1,size = [N,Q])
 
@@ -191,13 +202,13 @@ lengthscaleM52 = tf.nn.softplus(2.0*lengthscaleM52_pre)
 varianceM52 = tf.nn.softplus(varianceM52_pre)
 
 
-period_pre = tf.Variable(np.log(np.exp(7.0*len_init)-1), dtype = tf.float32)
-period_len_pre = tf.Variable(1.0)
-period_var_pre = tf.Variable(np.log(np.exp(0.5)-1), dtype = tf.float32)#
+#period_pre = tf.Variable(np.log(np.exp(7.0*len_init)-1), dtype = tf.float32)
+#period_len_pre = tf.Variable(1.0)
+#period_var_pre = tf.Variable(np.log(np.exp(0.5)-1), dtype = tf.float32)#
 
-period = tf.nn.softplus(period_pre)
-period_length = tf.nn.softplus(period_len_pre)
-period_var = tf.nn.softplus(period_var_pre)
+#period = tf.nn.softplus(period_pre)
+#period_length = tf.nn.softplus(period_len_pre)
+#period_var = tf.nn.softplus(period_var_pre)
 
 #Kuu = rbf(xu,xu,tf.cast(lengthscale,dtype=tf.float64),tf.cast(variance,tf.float64)) + \
 #matern12(xu,xu,tf.cast(lengthscaleM12,dtype = tf.float64),tf.cast(varianceM12,tf.float64)) # + \
@@ -346,18 +357,20 @@ for iteration in range(1,iterations):
         temp_name = 'model-output-' + str(iteration) + '.hdf5'
         save(temp_name)
 
-    if loss_new > loss_old:
-        print(iteration)
-        convergence_counter += 1
-        print(convergence_counter)
-
-    else:
-        convergence_counter = 0
-        loss_old = loss_new
+    if iteration > min_iter:
+	    if loss_new > loss_old:
+		    #print(iteration + ': ' + str(loss_new))
+		    convergence_counter += 1
+		    #if convergence_counter > 5:
+			  #  print(convergence_counter)
+	    else:
+		    convergence_counter = 0
+    		    loss_old = loss_new
 
 
     if convergence_counter > 10:
         break
+
 inference.finalize()
 
 ## Save Results

@@ -28,7 +28,8 @@ Q = 3
 m = 30
 df = 4.0
 offset = 0.01
-M = 100
+M = 500
+p = 500
 
 iterations = 1000
 save_freq = 250
@@ -49,7 +50,7 @@ os.makedirs(out_dir)
 #dat_path = '/home/architv/single-cell/tGPLVM/tGPLVM/dat/trajectory/y_train_trajectory.csv'
 #y_train = np.loadtxt(dat_path)
 
-xp = pd.read_csv('/home/architv/single-cell/tGPLVM/tGPLVM/dat/splatter-groups.csv')
+#xp = pd.read_csv('/home/architv/single-cell/tGPLVM/tGPLVM/dat/splatter-groups.csv')
 y_train = xp.values[:,1:].T.astype(np.float32)
 
 
@@ -129,6 +130,20 @@ def periodic(X1,X2,variance,period):
     K = variance * tf.exp(-0.5*tf.square(tf.sin(np.pi*square)))
     return K
 
+def kernelfx(X1,X2): # takes float32, casts to float64, computes float64 kernel
+    X1_64 = tf.cast(X1, dtype = tf.float64)
+    X2_64 = tf.cast(X2, dtype = tf.float64)
+    K = rbf(X1_64,X2_64,tf.cast(lengthscale,dtype=tf.float64),tf.cast(variance,tf.float64))
+    if m12:
+        K += matern12(X1_64,X2_64,tf.cast(lengthscaleM12,dtype = tf.float64),tf.cast(varianceM12,tf.float64))
+    if m32: 
+        K += matern32(X1_64,X2_64,tf.cast(lengthscaleM32,dtype = tf.float64),tf.cast(varianceM32,tf.float64))
+    if m52:
+        K += matern52(X1_64,X2_64,tf.cast(lengthscaleM52,dtype = tf.float64),tf.cast(varianceM52,tf.float64))
+    if per_bool:
+        K += periodic(X1_64,X2_64,tf.cast(period_var,dtype = tf.float64),tf.cast(period,dtype = tf.float64))
+    return K
+
 
 ## Initialization
 
@@ -183,8 +198,9 @@ period = tf.nn.softplus(period_pre)
 period_length = tf.nn.softplus(period_len_pre)
 period_var = tf.nn.softplus(period_var_pre)
 
-Kuu = rbf(xu,xu,tf.cast(lengthscale,dtype=tf.float64),tf.cast(variance,tf.float64)) + \
-matern12(xu,xu,tf.cast(lengthscaleM12,dtype = tf.float64),tf.cast(varianceM12,tf.float64)) #+ \
+Kuu = kernelfx(xu,xu)
+#rbf(xu,xu,tf.cast(lengthscale,dtype=tf.float64),tf.cast(variance,tf.float64)) + \
+#matern12(xu,xu,tf.cast(lengthscaleM12,dtype = tf.float64),tf.cast(varianceM12,tf.float64)) #+ \
 #matern32(xu,xu,tf.cast(lengthscaleM32,dtype = tf.float64),tf.cast(varianceM32,tf.float64)) + \
 #matern52(xu,xu,tf.cast(lengthscaleM52,dtype = tf.float64),tf.cast(varianceM52,tf.float64)) # + \
 #periodic(xu,xu,tf.cast(period_var,dtype = tf.float64),tf.cast(period,dtype = tf.float64))'''
