@@ -10,12 +10,12 @@ We provide a script for fitting the model with Black Box Variational Inference f
 ### Requirements
 
 tGPLVM is implemented in python 2.7 with the following packages:
-1. numpy
-2. pandas
-3. h5py
-4. tensorflow
-5. edwards
-6. sklearn
+1. numpy 1.14.5
+2. pandas 0.23.3
+3. h5py 2.8.0
+4. tensorflow 1.6.0
+5. edwards 1.3.5
+6. sklearn 0.0
 
 ### Running
 **Input**: A numpy array of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns (loaded to ```y_train```)
