@@ -50,7 +50,7 @@ When the input is Test_3_Pollen.h5, the following code with run 250 iterations w
 
 ```python tGPLVM-batch.py --Q 2 --N 249 --p 6982 --m12 True --m32 True --m52 True --iterations 250 --out ./test```
 
-We provide the input code for two other filtes:
+We provide the input code for two other files:
 1. tapio_tcell_tpm.txt - Data from Lonnberg gpfates. Data is available at https://github.com/Teichlab/GPfates
 2. 1M_neurons_filtered_gene_bc_matrices_h5.h5 - 1 million 10x mice brains cell. Data is available at https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.3.0/1M_neurons. Make sure to set    ```--spare True``` for this data.
 
