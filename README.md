@@ -18,20 +18,23 @@ tGPLVM is implemented in python 2.7 with the following packages:
 6. sklearn 0.19.2
 
 ### Running
-**Input**: A numpy array of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns (loaded to ```y_train```)
+**Input**: A numpy array of scRNA counts (or other types data) with format *N* cells (samples) as rows by *p* genes (features) as columns (loaded to ```y_train```). Input this directly into the code.
 
-**Options** (corresponding script variable):
+**Options**:
 The following parameters can be adjusted in the script to adjust inference:
 
-1. Degrees of freedom (```df```) - default: 4
-2. Initial Number of Dimensions (```Q```) - default: 3
+1. Degrees of freedom (```--df```) - default: 4
+2. Initial Number of Dimensions (```--Q```) - default: 3
 3. Kernel Function
-    + Matern 1/2, 3/2, 5/2 (```m12, m32, m52```) - default: True
-    + Periodic (```per_bool```) - default: False
-4. Number of Inducing Points (```m```) - default: 30
-5. Batch size (```M```) - default: 100 (*in tGPLVM-iterations-minibatch.py*)
-6. Max iterations (```iterations```) - default: 5000
-7. Save frequency (```save_freq```): - default: 250
+    + Matern 1/2, 3/2, 5/2 (```--m12, --m32, --m52```) - default: True
+    + Periodic (```--per_bool```) - default: False
+4. Number of Inducing Points (```--m```) - default: 30
+5. Batch size (```--M```) - default: 250
+6. Max iterations (```--iterations```) - default: 5000
+7. Save frequency (```--save_freq```): - default: 250
+8. Sparse data type (is CSC or CSR) (```--sparse```): - default: False
+9. PCA Initialization (otherwise random initialization) (```--pca_init```): - default: True
+10. Output directory (```--out```): - default: ./test
 
 **Output**: hdf5 file with
 1. Latent mapping posterior (mean and variance)
@@ -39,5 +42,9 @@ The following parameters can be adjusted in the script to adjust inference:
 3. Kernel hyperparameters (variance, lengthscale)
 4. Inducing points in latent and high-dimensional space
 5. Latent high-dimensional data (denoised data)
+
+**Example**:
+When the input is Test_3_Pollen.h5, the following code with run 250 iterations with the full dataset
+```python tGPLVM-batch.py --Q 2 --N 249 --p 6982 --iterations 250 --out ./test```
 
 
