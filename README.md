@@ -46,7 +46,7 @@ The following parameters can be adjusted in the script to adjust inference:
 
 **Example**:
 
-When the input is Test_3_Pollen.h5, the following code with run 250 iterations with the full dataset
+When the input is Test_3_Pollen.h5, the following code runs 250 iterations with the full dataset
 
 ```python tGPLVM-batch.py --Q 2 --N 249 --p 6982 --m12 True --m32 True --m52 True --iterations 250 --out ./test```
 
