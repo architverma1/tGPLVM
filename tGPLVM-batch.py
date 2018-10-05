@@ -77,55 +77,23 @@ if os.path.exists(out_dir):
 	shutil.rmtree(out_dir)
 os.makedirs(out_dir)
 
-# load data
+## load data here
 
-
-#dat_path = '/home/architv/single-cell/tGPLVM/tGPLVM/dat/trajectory/y_train_trajectory.csv'
-#y_train = np.loadtxt(dat_path)
-
-#dat_path = '/home/architv/single-cell/tGPLVM/tGPLVM/dat/trajectory/y_train_trajectory.csv'
-#y_train = np.loadtxt(dat_path)
-
-#xp = pd.read_csv('/home/architv/single-cell/tGPLVM/tGPLVM/dat/splatter-groups.csv')
-#y_train = xp.values[:,1:].T.astype(np.float32)
-
-#dat_waterfall = pd.read_csv('/home/archithpc/data/GSE71485_Single_TPM.txt', delimiter = '\t')
-#y_train = dat_waterfall.values.T #[np.sum(dat_waterfall.values,axis = 1) > 10].T
-#y_train = np.log2(1+y_train)
-
-dat_path = '/home/archithpc/sc-dim-red/Test_3_Pollen.h5'
+## Pollen Data
+dat_path = 'Test_3_Pollen.h5'
 dat_file = h5py.File(dat_path,'r')
 y_train = dat_file['in_X'][:]
 
+## 1M mice brain cells
 #dat_path = '1M_neurons_filtered_gene_bc_matrices_h5.h5'
 #dat_file = h5py.File(dat_path, 'r')
 #y_train = csc_matrix((dat_file['mm10']['data'],dat_file['mm10']['indices'],dat_file['mm10']['indptr']))
 #y_train = y_train.T[:ns,:]
 
-#dat_path = '/home/archithpc/data/ica_bone_marrow_h5.h5'
-#dat_file = h5py.File(dat_path, 'r')
-#y_train = csc_matrix((dat_file['GRCh38']['data'],dat_file['GRCh38']['indices'],dat_file['GRCh38']['indptr']))
-#y_train = y_train.T
-
-#dat_path = '/home/archithpc/data/t_3k_4k_aggregate_filtered_gene_bc_matrices_h5.h5'
-#dat_file = h5py.File(dat_path, 'r')
-#y_train = csc_matrix((dat_file['GRCh38']['data'],dat_file['GRCh38']['indices'],dat_file['GRCh38']['indptr']))
-#y_train = y_train.T
-
-#d2 = pd.read_csv('/home/archithpc/data/tapio_tcell_tpm.txt', delimiter = '\t')
+## Lonnberg/GPfates data
+#d2 = pd.read_csv('tapio_tcell_tpm.txt', delimiter = '\t')
 #y_train = d2.values[(np.sum(d2.values[:,1:],axis = 1) > 0),1:].astype(np.float32)
 #y_train = np.log2(1+y_train.T)
-
-#dat_path = '/home/archithpc/data/chorion.txt'
-#dat = pd.read_csv(dat_path, delimiter = '\t')
-#y_train = dat.values[:,1:].T.astype(np.float32)
-#y_train = np.log2(1.+y_train)
-
-#dat_path = '/home/archithpc/data/mouse-2k-nuerons/mm10/matrix.mtx'
-#dat_path = '/home/archithpc/data/donor-a-68k-pbmcs/filtered_matrices_mex/hg19/matrix.mtx'
-#dat_path = args.in_path
-#filtered = mmread(dat_path)
-#y_train = csc_matrix(filtered).T
 
 
 if CELLS_BY_GENES:
