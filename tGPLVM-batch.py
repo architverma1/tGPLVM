@@ -32,6 +32,7 @@ parser.add_argument('--Q', dest = 'Q', type = int, default = 3, help = 'Initial 
 parser.add_argument('--m12', dest = 'm12', type = bool, default = False, help = 'Include Matern 1/2 kernel')
 parser.add_argument('--m32', dest = 'm32', type = bool, default = False, help = 'Include Matern 3/2 kernel')
 parser.add_argument('--m52', dest = 'm52', type = bool, default = False, help = 'Include Matern 5/2 kernel')
+parser.add_argument('--per_bool', dest = 'per_bool', type = bool, default = False, help 'Include periodic kernel')
 parser.add_argument('--T', dest = 'Terror', type = bool, default = True, help = 'Use Student t Error')
 
 parser.add_argument('--M', dest = 'M', type = int, default = 2500, help = 'Number of samples per minibatch')
@@ -54,7 +55,7 @@ SPARSE = args.sparse
 m12 = args.m12
 m32 = args.m32
 m52 = args.m52
-per_bool = False
+per_bool = args.per_bool
 
 Terror = args.Terror
 
