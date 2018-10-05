@@ -212,8 +212,8 @@ def kernelfx(X1,X2): # takes float32, casts to float64, computes float64 kernel
 
 if PCA_INIT:
 	if SPARSE:
-		pca = NMF(n_components = Q)
-		#pca = PCA(n_components = Q)
+		#pca = NMF(n_components = Q) # - used for 1m brain cells only
+		pca = TruncatedSVD(n_components = Q)
 	else:
 		pca = PCA(n_components = Q)
 	qx_init = pca.fit_transform(y_train) #.tocsr())
