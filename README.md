@@ -1,4 +1,4 @@
-# tGPLVM: A Nonparametric, Generative Model for Manifold Learning with scRNA-seq experimental data
+# tGPLVM: A robust nonlinear manifold model for single cell RNA-seq data.
 ## Intro
 
 Dimension reduction is a common and critical first step in analysis of high throughput singe cell RNA sequencing. tGPLVM is a nonparametric, generative model for nonlinear manifold learning; that is a flexible, nearly assumption-free model that doesn't require setting parameters *a priori* (e.g. number of dimensions, perplexity, etc.) and provides uncertainty estimates for sample mappings. tGPLVM can be used for visualization of high-dimensional data or as part of a pipeline for cell type identification or pseudotime reconstruction. 
