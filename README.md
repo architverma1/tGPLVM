@@ -24,17 +24,18 @@ tGPLVM is implemented in python 2.7 with the following packages:
 The following parameters can be adjusted in the script to adjust inference:
 
 1. Degrees of freedom (```--df```) - default: 4
-2. Initial Number of Dimensions (```--Q```) - default: 3
-3. Kernel Function
+2. Use t-Distribution error model (otherwise normal error) (```--T```) - default: True
+3. Initial Number of Dimensions (```--Q```) - default: 3
+4. Kernel Function
     + Matern 1/2, 3/2, 5/2 (```--m12, --m32, --m52```) - default: True
     + Periodic (```--per_bool```) - default: False
-4. Number of Inducing Points (```--m```) - default: 30
-5. Batch size (```--M```) - default: 250
-6. Max iterations (```--iterations```) - default: 5000
-7. Save frequency (```--save_freq```): - default: 250
-8. Sparse data type (is CSC or CSR) (```--sparse```): - default: False
-9. PCA Initialization (otherwise random initialization) (```--pca_init```): - default: True
-10. Output directory (```--out```): - default: ./test
+5. Number of Inducing Points (```--m```) - default: 30
+6. Batch size (```--M```) - default: 250
+7. Max iterations (```--iterations```) - default: 5000
+8. Save frequency (```--save_freq```): - default: 250
+9. Sparse data type (is CSC or CSR) (```--sparse```): - default: False
+10. PCA Initialization (otherwise random initialization) (```--pca_init```): - default: True
+11. Output directory (```--out```): - default: ./test
 
 **Output**: hdf5 file with
 1. Latent mapping posterior (mean and variance)
