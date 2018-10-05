@@ -34,15 +34,22 @@ parser.add_argument('--m32', dest = 'm32', type = bool, default = False, help = 
 parser.add_argument('--m52', dest = 'm52', type = bool, default = False, help = 'Include Matern 5/2 kernel')
 parser.add_argument('--T', dest = 'Terror', type = bool, default = True, help = 'Use Student t Error')
 
+parser.add_argument('--M', dest = 'M', type = int, default = 2500, help = 'Number of samples per minibatch')
+parser.add_argument('--p', dest = 'p', type = int, default = 250, help = 'Number of genes per minibatch')
+parser.add_argument('--df', dest = 'df', type = float, default = 4.0, help = 'Degrees of Freedom of Students T-Distribution')
+parser.add_argument('--m', dest = 'm', type = int, default = 30, help = 'Number of inducing points')
+parser.add_argument('--iterations', dest = 'iterations', type = int, default = 5000, help = 'Number of iterations to run')
+parser.add_argument('--save_freq', dest = 'save_freq', type = int, default = 250, help = 'Frequency at which to save inference results')
 #parser.add_argument('--in_path', dest = 'in_path', type = str, help = 'mtx file')
 
+parser.add_argument('--sparse', dest = 'sparse', type = bool, default = False, help = 'Data saved in sparse format (CSC/CSR)')
+parser.add_argument('--pca_init', dest = 'pca_init', type = bool, default = True, help = 'Initialize with PCA/TruncatedSVD (True) or Randomly (False)')
 args = parser.parse_args()
 
-ns = 1000000
 SIMULATED = False
-PCA_INIT = True
+PCA_INIT = args.pca_init
 CELLS_BY_GENES = True
-SPARSE = True
+SPARSE = args.sparse
 
 m12 = args.m12
 m32 = args.m32
@@ -52,18 +59,17 @@ per_bool = False
 Terror = args.Terror
 
 Q = args.Q
-m = 30
-df = 4.0
+m = args.m
+df = args.df
 offset = 0.01
-M = np.minimum(ns,2500)
-p = 250
+M = args.M
+p = args.p
+print('Q: ' + str(Q) + ' m: ' + str(m) + ' df: ' + str(df) + ' M: ' + str(M) + ' p: ' + str(p))
 
+iterations = args.iterations
+print('Iterations: ' + str(iterations))
+save_freq = args.save_freq
 
-iterations = 100 * int(ns/M)
-print(iterations)
-save_freq = 500
-#out_dir = './cord-blood/t-error/q5/'
-#out_dir = './test_kern_fx/' # save to scratch
 out_dir = args.outdir
 # create out directory
 if os.path.exists(out_dir):
@@ -87,14 +93,14 @@ os.makedirs(out_dir)
 #y_train = dat_waterfall.values.T #[np.sum(dat_waterfall.values,axis = 1) > 10].T
 #y_train = np.log2(1+y_train)
 
-#dat_path = '/home/archithpc/sc-dim-red/Test_3_Pollen.h5'
-#dat_file = h5py.File(dat_path,'r')
-#y_train = dat_file['in_X'][:]
+dat_path = '/home/archithpc/sc-dim-red/Test_3_Pollen.h5'
+dat_file = h5py.File(dat_path,'r')
+y_train = dat_file['in_X'][:]
 
-dat_path = '1M_neurons_filtered_gene_bc_matrices_h5.h5'
-dat_file = h5py.File(dat_path, 'r')
-y_train = csc_matrix((dat_file['mm10']['data'],dat_file['mm10']['indices'],dat_file['mm10']['indptr']))
-y_train = y_train.T[:ns,:]
+#dat_path = '1M_neurons_filtered_gene_bc_matrices_h5.h5'
+#dat_file = h5py.File(dat_path, 'r')
+#y_train = csc_matrix((dat_file['mm10']['data'],dat_file['mm10']['indices'],dat_file['mm10']['indptr']))
+#y_train = y_train.T[:ns,:]
 
 #dat_path = '/home/archithpc/data/ica_bone_marrow_h5.h5'
 #dat_file = h5py.File(dat_path, 'r')
@@ -129,7 +135,8 @@ else:
 	N = y_train.shape[1]
 	G = y_train.shape[0]
 	y_train = y_train.T
-
+if N < M:
+	M = N
 #gene_weights = 200.*np.sum(y_train > 0, axis = 0)/float(N)
 if SPARSE:
 	exp = y_train > 0
@@ -281,20 +288,12 @@ varianceM52_pre = tf.Variable(np.log(np.exp(0.1)-1), dtype = tf.float32)
 lengthscaleM52 = tf.nn.softplus(lengthscaleM52_pre)
 varianceM52 = tf.nn.softplus(varianceM52_pre)
 
+period_pre = tf.Variable(np.log(np.exp(7.0*len_init)-1), dtype = tf.float32)
+period_len_pre = tf.Variable(1.0)
+period_var_pre = tf.Variable(np.log(np.exp(0.5)-1), dtype = tf.float32)#
 
-#period_pre = tf.Variable(np.log(np.exp(7.0*len_init)-1), dtype = tf.float32)
-#period_len_pre = tf.Variable(1.0)
-#period_var_pre = tf.Variable(np.log(np.exp(0.5)-1), dtype = tf.float32)#
-
-#period = tf.nn.softplus(period_pre)
-#period_length = tf.nn.softplus(period_len_pre)
-#period_var = tf.nn.softplus(period_var_pre)
-
-#Kuu = rbf(xu,xu,tf.cast(lengthscale,dtype=tf.float64),tf.cast(variance,tf.float64)) + \
-#matern12(xu,xu,tf.cast(lengthscaleM12,dtype = tf.float64),tf.cast(varianceM12,tf.float64)) # + \
-#matern32(xu,xu,tf.cast(lengthscaleM32,dtype = tf.float64),tf.cast(varianceM32,tf.float64)) + \
-#matern52(xu,xu,tf.cast(lengthscaleM52,dtype = tf.float64),tf.cast(varianceM52,tf.float64)) # + \
-#periodic(xu,xu,tf.cast(period_var,dtype = tf.float64),tf.cast(period,dtype = tf.float64))'''
+period = tf.nn.softplus(period_pre)
+period_length = tf.nn.softplus(period_len_pre)
 
 Kuu = kernelfx(xu,xu)
 
@@ -304,14 +303,7 @@ fu_scale = tf.cast(tf.cholesky(Kuu + offset*tf.eye(m, dtype = tf.float64), name 
 u = MultivariateNormalTriL(loc = fu_loc, scale_tril = fu_scale, name = 'pu')
 x = Normal(loc = tf.zeros((M,Q)), scale = 1.0)
 
-
-#xu32 = tf.cast(xu,dtype = tf.float32)
-
-#Kfu = rbf(x,xu32,lengthscale,variance) + matern12(x,xu32,lengthscaleM12,varianceM12)# + matern32(x,xu32,lengthscaleM32,varianceM32) + matern52(x,xu32,lengthscaleM52,varianceM52) #+ periodic(x,xu32,period_var,period)
-
 Kfu = kernelfx(x,xu)
-
-#Kff = rbf(x,x,lengthscale,variance) + matern12(x,x,lengthscaleM12,varianceM12)# + matern32(x,x,lengthscaleM32,varianceM32) + matern52(x,x,lengthscaleM52,varianceM52)# + periodic(x,x,period_var,period)
 
 Kff = kernelfx(x,x)
 
@@ -351,10 +343,7 @@ qx_scale_mini = tf.gather(qx_scale, idx_ph)
 
 qx = Normal(loc = qx_mini, scale = tf.nn.softplus(qx_scale_mini), name = 'qx')
 
-#QKfu = rbf(qx,xu32,lengthscale, variance) + matern12(qx,xu32,lengthscaleM12, varianceM12)# + matern32(qx,xu32,lengthscaleM32, varianceM32) + matern52(qx,xu32,lengthscaleM52, varianceM52)# + periodic(qx,xu32,period_var,period)
 QKfu = kernelfx(qx,xu)
-
-#QKff = rbf(qx,qx,lengthscale,variance) + matern12(qx,qx,lengthscaleM12,varianceM12)# + matern32(qx,qx,lengthscaleM32,varianceM32) + matern52(qx,qx,lengthscaleM52,varianceM52)# + periodic(qx,qx,period_var,period)
 
 QKff = kernelfx(qx,qx)
 
@@ -385,7 +374,6 @@ def save(name):
     elapsed = time_now - time_start
     x_post = qx_mean.eval()
     x_var_post = tf.nn.softplus(qx_scale).eval()
-    #f_post = qf.eval(feed_dict = {y_dat: y_train.T, idx_ph: range(0,N)})
     xu_post = xu.eval()
     u_post = qu.loc.eval(feed_dict = {y_dat: y_batch, idx_ph: idx_batch, idx_g: gix})
     t_scales = t_var_full.eval()
@@ -409,10 +397,8 @@ def save(name):
 
     fout = h5py.File(fname,'w')
 
-    #fout.create_dataset("y_train", data = y_train)
     fout.create_dataset("x_mean", data = x_post)
     fout.create_dataset("x_var", data = x_var_post)
-    #fout.create_dataset("f", data = f_post)
     fout.create_dataset("xu", data = xu_post)
     fout.create_dataset("u", data = u_post)
     fout.create_dataset("scales", data = t_scales)
@@ -429,7 +415,6 @@ def save(name):
 
 ## Run Inference
 inference = ed.KLqp({f: qf, x: qx, u: qu}, data = {y: y_dat_ph})
-#inference.run(n_iter = iterations, logdir = 'log/inducing_pts')
 time_start = time.time()
 inference.initialize()
 tf.global_variables_initializer().run()
@@ -447,11 +432,6 @@ min_iter = 100
 chol_fails = 0
 
 for iteration in range(1,iterations):
-    #if iteration % test_freq == 0:
-#	y_batch = test_batch
-#	idx_batch = test_idx
-#    else:
-#	y_batch, idx_batch = next_batch(y_train, M)
     
     y_batch, idx_batch, gix = next_batch(y_train, M, p)
     try: 
@@ -465,26 +445,6 @@ for iteration in range(1,iterations):
     if iteration % save_freq == 0:
         temp_name = 'model-output-' + str(iteration) + '.hdf5'
         save(temp_name)
-
-#    if iteration % test_freq == 0:
-#	    loss_new = info_dict['loss']
-#	    if loss_new > loss_old:
-#		    print(iteration)
-#		    convergence_counter += 1
-#		    print(convergence_counter)
-#	    else:
-#		    convergence_counter = 0
-#		    loss_old = loss_new
-#    if iteration > min_iter:
-#	    loss_new = info_dict['loss']
-#	    if loss_new > loss_old:
-#		    convergence_counter += 1
-#	    else:
-#		    convergence_counter = 0
-#		    loss_old = loss_new
-#	    if convergence_counter > 5:
-#		    break
-inference.finalize()
 print(chol_fails)
 ## Save Results
 save('model-output-final.hdf5')
