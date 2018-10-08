@@ -42,7 +42,6 @@ The following parameters can be adjusted in the script to adjust inference:
 2. Gene-specific noise
 3. Kernel hyperparameters (variance, lengthscale)
 4. Inducing points in latent and high-dimensional space
-5. Latent high-dimensional data (denoised data)
 
 **Example**:
 
