@@ -89,7 +89,7 @@ y_train = dat_file['in_X'][:]
 #dat_path = '1M_neurons_filtered_gene_bc_matrices_h5.h5'
 #dat_file = h5py.File(dat_path, 'r')
 #y_train = csc_matrix((dat_file['mm10']['data'],dat_file['mm10']['indices'],dat_file['mm10']['indptr']))
-#y_train = y_train.T[:ns,:]
+#y_train = y_train.T
 
 ## Lonnberg/GPfates data
 #d2 = pd.read_csv('tapio_tcell_tpm.txt', delimiter = '\t')
